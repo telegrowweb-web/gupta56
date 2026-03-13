@@ -2,40 +2,43 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Gupta Trader — Intraday Signals</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+/* ─── RESET ─────────────────────────────── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
+/* ─── TOKENS ─────────────────────────────── */
 :root {
-  --gold: #d4a853;
-  --gold2: #f0c97a;
-  --gold3: #8a6224;
-  --dark: #080608;
-  --text: #f0e8d8;
-  --muted: #7a6e5e;
+  --gold:   #d4a853;
+  --gold2:  #f0c97a;
+  --gold3:  #8a6224;
+  --dark:   #080608;
+  --text:   #f0e8d8;
+  --muted:  #7a6e5e;
 }
 
-html, body {
-  width: 100%; height: 100%;
-  overflow: hidden;
+/* ─── BASE ───────────────────────────────── */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+body {
   font-family: 'DM Sans', sans-serif;
   background: var(--dark);
   color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
-/* BACKGROUND */
-.bg { position: fixed; inset: 0; z-index: 0; }
-
-.bg-glow {
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 70% 50% at 50% 50%, rgba(212,168,83,.07) 0%, transparent 70%),
-    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(30,10,0,.8) 0%, transparent 60%),
-    radial-gradient(ellipse 100% 60% at 50% 0%, rgba(30,10,0,.6) 0%, transparent 60%);
+/* ─── BACKGROUND ─────────────────────────── */
+.bg {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
 }
-
 .bg-lines {
   position: absolute; inset: 0;
   background-image: repeating-linear-gradient(
@@ -43,32 +46,37 @@ html, body {
     rgba(212,168,83,.018) 40px, rgba(212,168,83,.018) 41px
   );
 }
-
+.bg-glow {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 50%, rgba(212,168,83,.07) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(30,10,0,.8) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 60% at 50% 0%,  rgba(30,10,0,.6) 0%, transparent 60%);
+}
 .orb {
   position: absolute; border-radius: 50%;
   filter: blur(90px);
   animation: drift 14s ease-in-out infinite alternate;
 }
 .orb1 {
-  width: 600px; height: 600px;
+  width: clamp(280px,60vw,600px); height: clamp(280px,60vw,600px);
   background: radial-gradient(circle, rgba(212,168,83,.09), transparent 70%);
-  top: -160px; left: -100px;
+  top: -30%; left: -15%;
 }
 .orb2 {
-  width: 450px; height: 450px;
+  width: clamp(220px,45vw,450px); height: clamp(220px,45vw,450px);
   background: radial-gradient(circle, rgba(180,100,40,.07), transparent 70%);
-  bottom: -100px; right: -80px; animation-delay: -5s;
+  bottom: -20%; right: -10%; animation-delay:-5s;
 }
 .orb3 {
-  width: 320px; height: 320px;
+  width: clamp(160px,30vw,320px); height: clamp(160px,30vw,320px);
   background: radial-gradient(circle, rgba(212,168,83,.05), transparent 70%);
-  top: 40%; left: 62%; animation-delay: -9s;
+  top:40%; left:62%; animation-delay:-9s;
 }
 @keyframes drift {
   from { transform: translate(0,0) scale(1); }
   to   { transform: translate(30px,20px) scale(1.06); }
 }
-
 .dust-wrap { position: absolute; inset: 0; overflow: hidden; }
 .dust {
   position: absolute; border-radius: 50%;
@@ -76,45 +84,50 @@ html, body {
   animation: rise linear infinite;
 }
 @keyframes rise {
-  0%   { transform: translateY(105vh) scale(0); opacity: 0; }
-  8%   { opacity: .5; }
-  92%  { opacity: .15; }
-  100% { transform: translateY(-8vh) scale(1.5); opacity: 0; }
+  0%   { transform: translateY(105vh) scale(0); opacity:0; }
+  8%   { opacity:.5; }
+  92%  { opacity:.15; }
+  100% { transform: translateY(-8vh) scale(1.5); opacity:0; }
 }
 
-/* LAYOUT */
+/* ─── PAGE WRAPPER ───────────────────────── */
 .page {
   position: relative; z-index: 10;
-  width: 100%; height: 100vh;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 24px;
+  padding: 60px 20px 100px; /* bottom pad for credit */
   text-align: center;
+  gap: 0;
 }
 
-/* Eyebrow */
+/* ─── EYEBROW ────────────────────────────── */
 .eyebrow {
-  display: flex; align-items: center; gap: 14px;
-  margin-bottom: 30px;
-  animation: up 1s .1s both;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: clamp(18px, 4vw, 30px);
+  animation: up .9s .1s both;
 }
 .eyebrow-line {
-  width: 56px; height: 1px;
+  width: clamp(36px, 8vw, 56px); height: 1px;
   background: linear-gradient(90deg, transparent, var(--gold));
 }
 .eyebrow-line.r { background: linear-gradient(90deg, var(--gold), transparent); }
 .eyebrow-text {
-  font-size: 10px; letter-spacing: .32em; font-weight: 500;
+  font-size: clamp(8px, 2vw, 10px);
+  letter-spacing: .32em; font-weight: 500;
   color: var(--gold); text-transform: uppercase;
+  white-space: nowrap;
 }
 
-/* Logo */
+/* ─── LOGO ───────────────────────────────── */
 .logo-wrap {
   position: relative; display: inline-block;
-  margin-bottom: 26px;
-  animation: up 1s .2s both;
+  margin-bottom: clamp(18px, 4vw, 26px);
+  animation: up .9s .2s both;
 }
 .logo-spin-ring {
   position: absolute; inset: -8px; border-radius: 50%;
@@ -127,211 +140,238 @@ html, body {
   border: 1.5px solid rgba(212,168,83,.35);
 }
 .logo-img {
-  width: 108px; height: 108px; border-radius: 50%;
-  object-fit: cover; display: block; position: relative; z-index: 2;
+  width: clamp(80px, 22vw, 108px);
+  height: clamp(80px, 22vw, 108px);
+  border-radius: 50%;
+  object-fit: cover; display: block;
+  position: relative; z-index: 2;
   box-shadow: 0 0 40px rgba(212,168,83,.22);
 }
 .live-badge {
-  position: absolute; bottom: 4px; right: 4px; z-index: 5;
-  display: flex; align-items: center; gap: 5px;
+  position: absolute; bottom: 2px; right: 2px; z-index: 5;
+  display: flex; align-items: center; gap: 4px;
   background: rgba(8,6,8,.92);
   border: 1px solid rgba(46,213,115,.4);
-  border-radius: 20px; padding: 3px 8px 3px 6px;
+  border-radius: 20px; padding: 3px 7px 3px 5px;
 }
 .live-dot {
-  width: 7px; height: 7px; border-radius: 50%;
+  width: 6px; height: 6px; border-radius: 50%;
   background: #2ed573;
   animation: blink 1.4s ease infinite;
+  flex-shrink: 0;
 }
 .live-txt { font-size: 8px; font-weight: 600; color: #2ed573; letter-spacing: .12em; }
 @keyframes blink {
   0%,100% { opacity:1; box-shadow: 0 0 6px #2ed573; }
-  50%      { opacity:.3; box-shadow: none; }
+  50%      { opacity:.3; box-shadow:none; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Name */
+/* ─── NAME ───────────────────────────────── */
 .name {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(40px, 9vw, 70px);
+  font-size: clamp(36px, 10vw, 70px);
   font-weight: 900; line-height: .92; letter-spacing: -.01em;
   background: linear-gradient(160deg, #f8efd4 20%, var(--gold2) 55%, #c8832a 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 4px;
-  animation: up 1s .3s both;
+  animation: up .9s .3s both;
 }
 .name-sub {
   display: block;
   font-family: 'Playfair Display', serif;
   font-style: italic; font-weight: 400;
-  font-size: clamp(14px, 3vw, 20px);
-  letter-spacing: .06em;
+  font-size: clamp(13px, 3.5vw, 19px);
+  letter-spacing: .05em;
   background: linear-gradient(90deg, var(--muted), rgba(212,168,83,.6));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-top: 8px;
 }
 
-/* Stats */
+/* ─── STATS ──────────────────────────────── */
 .stats {
-  display: flex; align-items: center; gap: 22px;
-  margin: 22px 0 26px;
-  animation: up 1s .4s both;
+  display: flex; align-items: center;
+  gap: clamp(14px, 4vw, 22px);
+  margin: clamp(16px, 4vw, 22px) 0 clamp(18px, 4vw, 26px);
+  animation: up .9s .4s both;
 }
 .stat { display: flex; flex-direction: column; align-items: center; }
 .stat-num {
-  font-size: 26px; font-weight: 700;
+  font-size: clamp(20px, 5vw, 26px); font-weight: 700;
   color: var(--gold2); letter-spacing: -.02em; line-height: 1;
 }
 .stat-lbl {
-  font-size: 9px; color: var(--muted);
-  letter-spacing: .2em; text-transform: uppercase; margin-top: 3px;
+  font-size: clamp(7px, 1.8vw, 9px); color: var(--muted);
+  letter-spacing: .18em; text-transform: uppercase; margin-top: 3px;
 }
 .sep {
-  width: 1px; height: 34px;
+  width: 1px; height: 30px;
   background: linear-gradient(to bottom, transparent, rgba(212,168,83,.3), transparent);
 }
 
-/* Pills */
+/* ─── PILLS ──────────────────────────────── */
 .pills {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
-  margin-bottom: 34px;
-  animation: up 1s .5s both;
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: clamp(6px, 2vw, 8px);
+  margin-bottom: clamp(24px, 5vw, 34px);
+  animation: up .9s .5s both;
+  max-width: 420px;
 }
 .pill {
-  display: flex; align-items: center; gap: 6px;
-  padding: 7px 16px;
+  display: flex; align-items: center; gap: 5px;
+  padding: clamp(5px, 1.5vw, 7px) clamp(10px, 3vw, 16px);
   border: 1px solid rgba(212,168,83,.2); border-radius: 40px;
   background: rgba(212,168,83,.04);
-  font-size: 11px; font-weight: 500;
+  font-size: clamp(10px, 2.5vw, 11px); font-weight: 500;
   color: rgba(240,232,216,.75); letter-spacing: .04em;
   backdrop-filter: blur(6px);
   transition: border-color .3s, background .3s;
+  white-space: nowrap;
 }
 .pill:hover { border-color: rgba(212,168,83,.45); background: rgba(212,168,83,.09); }
 
-/* ── GROWING BUTTON ── */
+/* ─── GROWING BUTTON ─────────────────────── */
 .btn-wrap {
   position: relative;
   display: inline-flex; align-items: center; justify-content: center;
-  animation: up 1s .65s both;
+  animation: up .9s .65s both;
 }
-
-/* Three expanding rings */
 .ring {
   position: absolute; inset: 0; border-radius: 60px;
-  border: 1.5px solid rgba(212,168,83,.6);
+  border: 1.5px solid rgba(212,168,83,.55);
   animation: ring-out 2.6s ease-out infinite;
   pointer-events: none;
 }
-.ring:nth-child(2) { animation-delay: .75s; }
-.ring:nth-child(3) { animation-delay: 1.5s; }
+.ring:nth-child(2) { animation-delay: .85s; }
+.ring:nth-child(3) { animation-delay: 1.7s; }
 @keyframes ring-out {
-  0%   { transform: scale(1); opacity: .6; }
-  100% { transform: scale(1.55); opacity: 0; }
+  0%   { transform: scale(1); opacity: .55; }
+  100% { transform: scale(1.6); opacity: 0; }
 }
-
 .btn-join {
   position: relative; z-index: 4;
-  display: inline-flex; align-items: center; gap: 12px;
-  padding: 18px 46px;
+  display: inline-flex; align-items: center;
+  gap: clamp(8px, 2vw, 12px);
+  padding: clamp(14px, 3.5vw, 18px) clamp(28px, 7vw, 46px);
   text-decoration: none; border-radius: 60px;
   font-family: 'DM Sans', sans-serif;
-  font-size: 13px; font-weight: 600;
+  font-size: clamp(11px, 3vw, 13px); font-weight: 700;
   letter-spacing: .16em; text-transform: uppercase;
   color: #080608;
   background: linear-gradient(135deg, #f0c97a 0%, var(--gold) 40%, #c8832a 100%);
-  box-shadow:
-    0 4px 28px rgba(212,168,83,.5),
-    0 1px 0 rgba(255,255,255,.25) inset,
-    0 -1px 0 rgba(0,0,0,.2) inset;
-  /* GROW pulse */
+  box-shadow: 0 4px 28px rgba(212,168,83,.5), 0 1px 0 rgba(255,255,255,.25) inset;
   animation: grow-pulse 2.4s ease-in-out infinite;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
 @keyframes grow-pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 4px 28px rgba(212,168,83,.5), 0 1px 0 rgba(255,255,255,.25) inset;
-  }
-  50% {
-    transform: scale(1.065);
-    box-shadow: 0 10px 48px rgba(212,168,83,.75), 0 1px 0 rgba(255,255,255,.25) inset;
-  }
+  0%,100% { transform:scale(1); box-shadow:0 4px 28px rgba(212,168,83,.5), 0 1px 0 rgba(255,255,255,.25) inset; }
+  50%      { transform:scale(1.065); box-shadow:0 10px 48px rgba(212,168,83,.75), 0 1px 0 rgba(255,255,255,.25) inset; }
 }
-
-/* shine on hover */
 .btn-join::before {
-  content: '';
-  position: absolute; inset: 0; border-radius: 60px;
-  background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,.28) 50%, transparent 70%);
-  transform: translateX(-100%);
+  content:'';
+  position:absolute; inset:0; border-radius:60px;
+  background:linear-gradient(90deg, transparent 30%, rgba(255,255,255,.28) 50%, transparent 70%);
+  transform:translateX(-100%);
 }
-.btn-join:hover::before {
-  transform: translateX(100%);
-  transition: transform .55s ease;
-}
+.btn-join:hover::before { transform:translateX(100%); transition:transform .55s ease; }
 .btn-join:hover {
-  filter: brightness(1.1);
-  animation-play-state: paused;
-  transform: scale(1.07);
-  transition: transform .2s, filter .2s;
+  filter:brightness(1.1);
+  animation-play-state:paused;
+  transform:scale(1.07);
+  transition:transform .2s, filter .2s;
 }
-
-.tg-icon { width: 20px; height: 20px; fill: #080608; flex-shrink: 0; }
+.btn-join:active { transform:scale(.97); }
+.tg-icon { width:18px; height:18px; fill:#080608; flex-shrink:0; }
 .arrow-chip {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 22px; height: 22px;
-  background: rgba(0,0,0,.18); border-radius: 50%;
-  font-size: 13px; font-weight: 700;
+  display:inline-flex; align-items:center; justify-content:center;
+  width:20px; height:20px;
+  background:rgba(0,0,0,.18); border-radius:50%;
+  font-size:11px; font-weight:700;
 }
 
-/* Tagline */
+/* ─── TAGLINE ────────────────────────────── */
 .tagline {
-  margin-top: 20px;
-  font-size: 10px; color: var(--muted);
-  letter-spacing: .18em; text-transform: uppercase;
-  animation: up 1s .75s both;
+  margin-top: clamp(14px, 3.5vw, 20px);
+  font-size: clamp(9px, 2.2vw, 11px);
+  color: var(--muted);
+  letter-spacing: .16em; text-transform: uppercase;
+  animation: up .9s .78s both;
 }
 .tagline b { color: rgba(212,168,83,.65); font-weight: 500; }
 
-/* Bottom rule */
-.footer {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 10px;
-  animation: up 1s 1s both;
+/* ─── CREDIT FOOTER ──────────────────────── */
+.credit {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 20px 14px;
+  background: linear-gradient(to top, rgba(8,6,8,.98) 60%, transparent);
+  font-size: clamp(10px, 2.5vw, 12px);
+  color: var(--muted);
+  letter-spacing: .04em;
+  animation: up .9s 1s both;
 }
-.footer span {
-  width: 36px; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212,168,83,.25));
+.credit-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: rgba(212,168,83,.4);
+  flex-shrink: 0;
 }
-.footer span.r { background: linear-gradient(90deg, rgba(212,168,83,.25), transparent); }
-.footer em {
-  font-size: 9px; font-style: normal;
-  letter-spacing: .3em; color: rgba(212,168,83,.28);
-  text-transform: uppercase;
+.credit a {
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: .06em;
+  transition: color .2s, text-shadow .2s;
+  display: inline-flex; align-items: center; gap: 5px;
 }
+.credit a:hover {
+  color: var(--gold2);
+  text-shadow: 0 0 12px rgba(212,168,83,.5);
+}
+.credit-tg { font-size: 13px; }
 
+/* ─── ANIMATION ──────────────────────────── */
 @keyframes up {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
 }
 
-@media (max-height: 680px) {
-  .eyebrow { margin-bottom: 16px; }
-  .logo-img { width: 80px; height: 80px; }
-  .stats { margin: 14px 0 18px; }
-  .pills { margin-bottom: 22px; }
-  .btn-join { padding: 14px 36px; }
+/* ─── RESPONSIVE ─────────────────────────── */
+
+/* Small phones (≤360px) */
+@media (max-width: 360px) {
+  .pills { gap: 5px; }
+  .pill  { font-size: 9px; padding: 5px 10px; }
+  .eyebrow-text { font-size: 8px; letter-spacing: .2em; }
 }
-@media (max-width: 380px) {
-  .pills { gap: 6px; }
-  .pill { font-size: 10px; padding: 6px 12px; }
+
+/* Very short screens (landscape phones) */
+@media (max-height: 600px) {
+  .page { padding: 40px 20px 80px; justify-content: flex-start; padding-top: 30px; }
+  .eyebrow { margin-bottom: 12px; }
+  .logo-img { width: 70px !important; height: 70px !important; }
+  .logo-wrap { margin-bottom: 14px; }
+  .name-sub { display: none; }
+  .stats { margin: 10px 0 14px; }
+  .pills { margin-bottom: 16px; }
+  .tagline { margin-top: 10px; }
+}
+
+/* Tablets & up */
+@media (min-width: 600px) {
+  .pills { max-width: 500px; }
 }
 </style>
 </head>
 <body>
 
+<!-- ── BACKGROUND ── -->
 <div class="bg">
   <div class="bg-lines"></div>
   <div class="orb orb1"></div>
@@ -341,6 +381,7 @@ html, body {
   <div class="dust-wrap" id="dustWrap"></div>
 </div>
 
+<!-- ── MAIN CONTENT ── -->
 <div class="page">
 
   <div class="eyebrow">
@@ -352,7 +393,9 @@ html, body {
   <div class="logo-wrap">
     <div class="logo-spin-ring"></div>
     <div class="logo-border"></div>
-    <img class="logo-img" src="http://zentryx.fun/wp-content/uploads/2026/03/ute.jpg" alt="Gupta Trader">
+    <img class="logo-img"
+         src="http://zentryx.fun/wp-content/uploads/2026/03/ute.jpg"
+         alt="Gupta Trader Logo">
     <div class="live-badge">
       <div class="live-dot"></div>
       <span class="live-txt">LIVE</span>
@@ -388,6 +431,7 @@ html, body {
     <div class="pill">🔔 Daily Alerts</div>
   </div>
 
+  <!-- Growing Join Button -->
   <div class="btn-wrap">
     <div class="ring"></div>
     <div class="ring"></div>
@@ -407,13 +451,19 @@ html, body {
 
 </div>
 
-<div class="footer">
-  <span></span>
-  <em>Gupta Trader · Telegram</em>
-  <span class="r"></span>
+<!-- ── CREDIT FOOTER ── -->
+<div class="credit">
+  <div class="credit-dot"></div>
+  <span>Ads managed by</span>
+  <a href="https://t.me/+TRlJl628l-FkMWE9" target="_blank" rel="noopener">
+    <span class="credit-tg">✈️</span>
+    @Nexgroww_agency
+  </a>
+  <div class="credit-dot"></div>
 </div>
 
 <script>
+  // Dust particles
   const wrap = document.getElementById('dustWrap');
   for (let i = 0; i < 24; i++) {
     const d = document.createElement('div');
