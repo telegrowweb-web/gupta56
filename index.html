@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gupta Trader — Intraday Signals</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --gold: #d4a853;
+  --gold2: #f0c97a;
+  --gold3: #8a6224;
+  --dark: #080608;
+  --text: #f0e8d8;
+  --muted: #7a6e5e;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--dark);
+  color: var(--text);
+}
+
+/* BACKGROUND */
+.bg { position: fixed; inset: 0; z-index: 0; }
+
+.bg-glow {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 50%, rgba(212,168,83,.07) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(30,10,0,.8) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 60% at 50% 0%, rgba(30,10,0,.6) 0%, transparent 60%);
+}
+
+.bg-lines {
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg, transparent 0px, transparent 40px,
+    rgba(212,168,83,.018) 40px, rgba(212,168,83,.018) 41px
+  );
+}
+
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(90px);
+  animation: drift 14s ease-in-out infinite alternate;
+}
+.orb1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(212,168,83,.09), transparent 70%);
+  top: -160px; left: -100px;
+}
+.orb2 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(180,100,40,.07), transparent 70%);
+  bottom: -100px; right: -80px; animation-delay: -5s;
+}
+.orb3 {
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(212,168,83,.05), transparent 70%);
+  top: 40%; left: 62%; animation-delay: -9s;
+}
+@keyframes drift {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(30px,20px) scale(1.06); }
+}
+
+.dust-wrap { position: absolute; inset: 0; overflow: hidden; }
+.dust {
+  position: absolute; border-radius: 50%;
+  background: var(--gold); opacity: 0;
+  animation: rise linear infinite;
+}
+@keyframes rise {
+  0%   { transform: translateY(105vh) scale(0); opacity: 0; }
+  8%   { opacity: .5; }
+  92%  { opacity: .15; }
+  100% { transform: translateY(-8vh) scale(1.5); opacity: 0; }
+}
+
+/* LAYOUT */
+.page {
+  position: relative; z-index: 10;
+  width: 100%; height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  text-align: center;
+}
+
+/* Eyebrow */
+.eyebrow {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 30px;
+  animation: up 1s .1s both;
+}
+.eyebrow-line {
+  width: 56px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+.eyebrow-line.r { background: linear-gradient(90deg, var(--gold), transparent); }
+.eyebrow-text {
+  font-size: 10px; letter-spacing: .32em; font-weight: 500;
+  color: var(--gold); text-transform: uppercase;
+}
+
+/* Logo */
+.logo-wrap {
+  position: relative; display: inline-block;
+  margin-bottom: 26px;
+  animation: up 1s .2s both;
+}
+.logo-spin-ring {
+  position: absolute; inset: -8px; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 30%, var(--gold3) 50%, var(--gold) 60%, var(--gold3) 70%, transparent 90%);
+  animation: spin 8s linear infinite;
+  filter: blur(1px); opacity: .7;
+}
+.logo-border {
+  position: absolute; inset: -4px; border-radius: 50%;
+  border: 1.5px solid rgba(212,168,83,.35);
+}
+.logo-img {
+  width: 108px; height: 108px; border-radius: 50%;
+  object-fit: cover; display: block; position: relative; z-index: 2;
+  box-shadow: 0 0 40px rgba(212,168,83,.22);
+}
+.live-badge {
+  position: absolute; bottom: 4px; right: 4px; z-index: 5;
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(8,6,8,.92);
+  border: 1px solid rgba(46,213,115,.4);
+  border-radius: 20px; padding: 3px 8px 3px 6px;
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #2ed573;
+  animation: blink 1.4s ease infinite;
+}
+.live-txt { font-size: 8px; font-weight: 600; color: #2ed573; letter-spacing: .12em; }
+@keyframes blink {
+  0%,100% { opacity:1; box-shadow: 0 0 6px #2ed573; }
+  50%      { opacity:.3; box-shadow: none; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Name */
+.name {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(40px, 9vw, 70px);
+  font-weight: 900; line-height: .92; letter-spacing: -.01em;
+  background: linear-gradient(160deg, #f8efd4 20%, var(--gold2) 55%, #c8832a 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 4px;
+  animation: up 1s .3s both;
+}
+.name-sub {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-style: italic; font-weight: 400;
+  font-size: clamp(14px, 3vw, 20px);
+  letter-spacing: .06em;
+  background: linear-gradient(90deg, var(--muted), rgba(212,168,83,.6));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-top: 8px;
+}
+
+/* Stats */
+.stats {
+  display: flex; align-items: center; gap: 22px;
+  margin: 22px 0 26px;
+  animation: up 1s .4s both;
+}
+.stat { display: flex; flex-direction: column; align-items: center; }
+.stat-num {
+  font-size: 26px; font-weight: 700;
+  color: var(--gold2); letter-spacing: -.02em; line-height: 1;
+}
+.stat-lbl {
+  font-size: 9px; color: var(--muted);
+  letter-spacing: .2em; text-transform: uppercase; margin-top: 3px;
+}
+.sep {
+  width: 1px; height: 34px;
+  background: linear-gradient(to bottom, transparent, rgba(212,168,83,.3), transparent);
+}
+
+/* Pills */
+.pills {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+  margin-bottom: 34px;
+  animation: up 1s .5s both;
+}
+.pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 16px;
+  border: 1px solid rgba(212,168,83,.2); border-radius: 40px;
+  background: rgba(212,168,83,.04);
+  font-size: 11px; font-weight: 500;
+  color: rgba(240,232,216,.75); letter-spacing: .04em;
+  backdrop-filter: blur(6px);
+  transition: border-color .3s, background .3s;
+}
+.pill:hover { border-color: rgba(212,168,83,.45); background: rgba(212,168,83,.09); }
+
+/* ── GROWING BUTTON ── */
+.btn-wrap {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  animation: up 1s .65s both;
+}
+
+/* Three expanding rings */
+.ring {
+  position: absolute; inset: 0; border-radius: 60px;
+  border: 1.5px solid rgba(212,168,83,.6);
+  animation: ring-out 2.6s ease-out infinite;
+  pointer-events: none;
+}
+.ring:nth-child(2) { animation-delay: .75s; }
+.ring:nth-child(3) { animation-delay: 1.5s; }
+@keyframes ring-out {
+  0%   { transform: scale(1); opacity: .6; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+
+.btn-join {
+  position: relative; z-index: 4;
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 18px 46px;
+  text-decoration: none; border-radius: 60px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: #080608;
+  background: linear-gradient(135deg, #f0c97a 0%, var(--gold) 40%, #c8832a 100%);
+  box-shadow:
+    0 4px 28px rgba(212,168,83,.5),
+    0 1px 0 rgba(255,255,255,.25) inset,
+    0 -1px 0 rgba(0,0,0,.2) inset;
+  /* GROW pulse */
+  animation: grow-pulse 2.4s ease-in-out infinite;
+}
+@keyframes grow-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 28px rgba(212,168,83,.5), 0 1px 0 rgba(255,255,255,.25) inset;
+  }
+  50% {
+    transform: scale(1.065);
+    box-shadow: 0 10px 48px rgba(212,168,83,.75), 0 1px 0 rgba(255,255,255,.25) inset;
+  }
+}
+
+/* shine on hover */
+.btn-join::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: 60px;
+  background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,.28) 50%, transparent 70%);
+  transform: translateX(-100%);
+}
+.btn-join:hover::before {
+  transform: translateX(100%);
+  transition: transform .55s ease;
+}
+.btn-join:hover {
+  filter: brightness(1.1);
+  animation-play-state: paused;
+  transform: scale(1.07);
+  transition: transform .2s, filter .2s;
+}
+
+.tg-icon { width: 20px; height: 20px; fill: #080608; flex-shrink: 0; }
+.arrow-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  background: rgba(0,0,0,.18); border-radius: 50%;
+  font-size: 13px; font-weight: 700;
+}
+
+/* Tagline */
+.tagline {
+  margin-top: 20px;
+  font-size: 10px; color: var(--muted);
+  letter-spacing: .18em; text-transform: uppercase;
+  animation: up 1s .75s both;
+}
+.tagline b { color: rgba(212,168,83,.65); font-weight: 500; }
+
+/* Bottom rule */
+.footer {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px;
+  animation: up 1s 1s both;
+}
+.footer span {
+  width: 36px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,168,83,.25));
+}
+.footer span.r { background: linear-gradient(90deg, rgba(212,168,83,.25), transparent); }
+.footer em {
+  font-size: 9px; font-style: normal;
+  letter-spacing: .3em; color: rgba(212,168,83,.28);
+  text-transform: uppercase;
+}
+
+@keyframes up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-height: 680px) {
+  .eyebrow { margin-bottom: 16px; }
+  .logo-img { width: 80px; height: 80px; }
+  .stats { margin: 14px 0 18px; }
+  .pills { margin-bottom: 22px; }
+  .btn-join { padding: 14px 36px; }
+}
+@media (max-width: 380px) {
+  .pills { gap: 6px; }
+  .pill { font-size: 10px; padding: 6px 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="bg-lines"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="bg-glow"></div>
+  <div class="dust-wrap" id="dustWrap"></div>
+</div>
+
+<div class="page">
+
+  <div class="eyebrow">
+    <div class="eyebrow-line"></div>
+    <span class="eyebrow-text">Free Telegram Channel</span>
+    <div class="eyebrow-line r"></div>
+  </div>
+
+  <div class="logo-wrap">
+    <div class="logo-spin-ring"></div>
+    <div class="logo-border"></div>
+    <img class="logo-img" src="http://zentryx.fun/wp-content/uploads/2026/03/ute.jpg" alt="Gupta Trader">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      <span class="live-txt">LIVE</span>
+    </div>
+  </div>
+
+  <div class="name">
+    Gupta Trader
+    <span class="name-sub">Intraday Signals &amp; Market Calls</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">35K+</div>
+      <div class="stat-lbl">Members</div>
+    </div>
+    <div class="sep"></div>
+    <div class="stat">
+      <div class="stat-num">99%</div>
+      <div class="stat-lbl">Accuracy</div>
+    </div>
+    <div class="sep"></div>
+    <div class="stat">
+      <div class="stat-num">Free</div>
+      <div class="stat-lbl">Always</div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <div class="pill">📊 Intraday Calls</div>
+    <div class="pill">🎯 Options Trades</div>
+    <div class="pill">💰 Stock Signals</div>
+    <div class="pill">🔔 Daily Alerts</div>
+  </div>
+
+  <div class="btn-wrap">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <a href="https://t.me/+lGGP6Hb8w_Y1NTBl" class="btn-join" target="_blank" rel="noopener">
+      <svg class="tg-icon" viewBox="0 0 24 24">
+        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+      </svg>
+      Join Free Channel
+      <span class="arrow-chip">→</span>
+    </a>
+  </div>
+
+  <div class="tagline">
+    <b>Zero Cost</b> · No Hidden Charges · <b>Join Anytime</b>
+  </div>
+
+</div>
+
+<div class="footer">
+  <span></span>
+  <em>Gupta Trader · Telegram</em>
+  <span class="r"></span>
+</div>
+
+<script>
+  const wrap = document.getElementById('dustWrap');
+  for (let i = 0; i < 24; i++) {
+    const d = document.createElement('div');
+    d.className = 'dust';
+    const s = Math.random() * 2.5 + 1;
+    d.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*16+10}s;animation-delay:${Math.random()*12}s;`;
+    wrap.appendChild(d);
+  }
+</script>
+</body>
+</html>
